@@ -2,6 +2,15 @@
 
 Sistema completo de gestión de facturación y cobranzas con seguimiento automático, alertas y envío de emails.
 
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+## 📸 Screenshots
+
+![Dashboard](https://via.placeholder.com/800x400?text=Dashboard+Screenshot)
+![Facturas](https://via.placeholder.com/800x400?text=Facturas+Screenshot)
+
 ## 🚀 Características
 
 ### ✅ Gestión de Facturas
@@ -54,7 +63,8 @@ Sistema completo de gestión de facturación y cobranzas con seguimiento automá
 
 ### Paso 1: Clonar/Descargar el Proyecto
 ```bash
-cd "Tami gestion"
+git clone https://github.com/tu-usuario/facturaflow.git
+cd facturaflow
 ```
 
 ### Paso 2: Configurar el Backend
@@ -227,7 +237,7 @@ models.Factura.fecha_vencimiento <= hoy + timedelta(days=3)  # 3 días
 ## 📁 Estructura del Proyecto
 
 ```
-Tami gestion/
+facturaflow/
 ├── backend/
 │   ├── main.py              # API FastAPI
 │   ├── models.py            # Modelos de base de datos
