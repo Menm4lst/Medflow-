@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - MedFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="mainContent" style="display: flex;">
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">⚕️</div>
+                <h2 class="logo-text">MedFlow</h2>
+                <p class="logo-subtitle">Gestión Médica</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="facturas.html" class="nav-item">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Facturas</span>
+                </a>
+                <a href="pacientes.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clientes</span>
+                </a>
+                <a href="notificaciones.html" class="nav-item">
+                    <span class="nav-icon">✉️</span>
+                    <span class="nav-text">Notificaciones</span>
+                    <span class="notification-count">3</span>
+                </a>
+                <a href="configuracion.html" class="nav-item active">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Configuración</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <div class="header-content">
+                    <div>
+                        <h1>⚙️ Configuración del Sistema</h1>
+                        <p class="subtitle">Personaliza y configura el sistema según tus necesidades</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">Usuario</span>
+                            <div class="user-avatar">👨‍⚕️</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container">
+                <div class="empty-state" style="padding: 100px 20px;">
+                    <div class="empty-icon">🚧</div>
+                    <h3>Sección en Desarrollo</h3>
+                    <p>La configuración del sistema estará disponible próximamente</p>
+                    <br>
+                    <a href="dashboard.html" class="btn btn-primary">🏠 Volver al Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function verificarSesion() {
+            const sesionActiva = localStorage.getItem('sesionActiva');
+            const nombreUsuario = localStorage.getItem('nombreUsuario');
+            
+            if (sesionActiva !== 'true') {
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement && nombreUsuario) {
+                userNameElement.textContent = nombreUsuario;
+            }
+            
+            return true;
+        }
+
+        function cerrarSesion() {
+            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                localStorage.removeItem('sesionActiva');
+                localStorage.removeItem('nombreUsuario');
+                window.location.href = 'index.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarSesion();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - MedFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="mainContent" style="display: flex;">
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">⚕️</div>
+                <h2 class="logo-text">MedFlow</h2>
+                <p class="logo-subtitle">Gestión Médica</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="facturas.html" class="nav-item">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Facturas</span>
+                </a>
+                <a href="pacientes.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clientes</span>
+                </a>
+                <a href="notificaciones.html" class="nav-item active">
+                    <span class="nav-icon">✉️</span>
+                    <span class="nav-text">Notificaciones</span>
+                </a>
+                <a href="configuracion.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Configuración</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <div class="header-content">
+                    <div>
+                        <h1>📬 Centro de Notificaciones</h1>
+                        <p class="subtitle">Gestiona todas las notificaciones y alertas del sistema</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="cerrarSesion()">
+                            🚪 Cerrar Sesión
+                        </button>
+                        <button class="btn btn-outline" onclick="marcarTodasLeidas()">
+                            ✓ Marcar todas como leídas
+                        </button>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">Usuario</span>
+                            <div class="user-avatar">👨‍⚕️</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container">
+                <!-- Filtros -->
+                <div class="notification-filters">
+                    <button class="filter-btn active" data-filter="all" onclick="filtrarNotificaciones('all')">
+                        📋 Todas <span class="filter-count" id="countAll">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="urgent" onclick="filtrarNotificaciones('urgent')">
+                        🚨 Urgentes <span class="filter-count urgent" id="countUrgent">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="warning" onclick="filtrarNotificaciones('warning')">
+                        ⏰ Próximas <span class="filter-count warning" id="countWarning">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="info" onclick="filtrarNotificaciones('info')">
+                        ℹ️ Información <span class="filter-count info" id="countInfo">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="read" onclick="filtrarNotificaciones('read')">
+                        ✓ Leídas <span class="filter-count" id="countRead">0</span>
+                    </button>
+                </div>
+
+                <!-- Lista de Notificaciones -->
+                <div class="notifications-container">
+                    <div id="notificationsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="notificaciones.js"></script>
+</body>
+</html>

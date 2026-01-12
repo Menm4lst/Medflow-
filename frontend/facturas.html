@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturas - MedFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="mainContent" style="display: flex;">
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">⚕️</div>
+                <h2 class="logo-text">MedFlow</h2>
+                <p class="logo-subtitle">Gestión Médica</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="facturas.html" class="nav-item active">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Facturas</span>
+                </a>
+                <a href="pacientes.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clientes</span>
+                </a>
+                <a href="notificaciones.html" class="nav-item">
+                    <span class="nav-icon">✉️</span>
+                    <span class="nav-text">Notificaciones</span>
+                    <span class="notification-count">3</span>
+                </a>
+                <a href="configuracion.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Configuración</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <div class="header-content">
+                    <div>
+                        <h1>📄 Gestión de Facturas</h1>
+                        <p class="subtitle">Administra todas las facturas del sistema</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+                        <a href="notificaciones.html" class="btn btn-outline notification-btn">🔔 <span class="badge">3</span></a>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">Usuario</span>
+                            <div class="user-avatar">👨‍⚕️</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="abrirModalNuevaFactura()">
+                        <span class="btn-icon">📄</span>
+                        <span>Nueva Factura</span>
+                    </button>
+                    <button class="btn btn-outline" onclick="window.location.reload()">
+                        <span class="btn-icon">🔄</span>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+
+                <div class="filter-bar">
+                    <select id="filtroEstado">
+                        <option value="">📋 Todos los estados</option>
+                        <option value="Pendiente">⏱ Pendiente</option>
+                        <option value="En seguimiento">👀 En seguimiento</option>
+                        <option value="Pagada">✅ Pagada</option>
+                        <option value="Vencida">⚠️ Vencida</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <div id="facturasTable"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva/Editar Factura -->
+    <div id="modalNuevaFactura" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="tituloModalFactura">📄 Nueva Factura</h2>
+                <button class="btn-close" onclick="cerrarModalNuevaFactura()">✖️</button>
+            </div>
+            <form id="formNuevaFactura" onsubmit="guardarFactura(event)">
+                <input type="hidden" id="facturaId">
+                <div class="form-group">
+                    <label for="facturaNumero">Número de factura *</label>
+                    <input type="text" id="facturaNumero" required placeholder="Ej: FAC-001">
+                </div>
+                <div class="form-group">
+                    <label for="facturaCliente">Cliente *</label>
+                    <select id="facturaCliente" required>
+                        <option value="">Seleccione un cliente...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="facturaMonto">Monto *</label>
+                    <input type="number" id="facturaMonto" required step="0.01" min="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="facturaVencimiento">Fecha de vencimiento *</label>
+                    <input type="date" id="facturaVencimiento" required>
+                </div>
+                <div class="form-group">
+                    <label for="facturaEstado">Estado</label>
+                    <select id="facturaEstado">
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En seguimiento">En seguimiento</option>
+                        <option value="Pagada">Pagada</option>
+                        <option value="Vencida">Vencida</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="facturaDescripcion">Descripción</label>
+                    <textarea id="facturaDescripcion" rows="3" placeholder="Descripción de los servicios..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="facturaNotas">Notas adicionales</label>
+                    <textarea id="facturaNotas" rows="2" placeholder="Notas internas..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="cerrarModalNuevaFactura()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardarFactura">Crear Factura</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ver Factura -->
+    <div id="modalVerFactura" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📄 Detalles de la Factura</h2>
+                <button class="btn-close" onclick="cerrarModalVerFactura()">✖️</button>
+            </div>
+            <div id="detallesFactura" style="padding: 20px 0;">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="cerrarModalVerFactura()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+
+        function verificarSesion() {
+            const sesionActiva = localStorage.getItem('sesionActiva');
+            const nombreUsuario = localStorage.getItem('nombreUsuario');
+            
+            if (sesionActiva !== 'true') {
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement && nombreUsuario) {
+                userNameElement.textContent = nombreUsuario;
+            }
+            
+            return true;
+        }
+
+        function cerrarSesion() {
+            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                localStorage.removeItem('sesionActiva');
+                localStorage.removeItem('nombreUsuario');
+                window.location.href = 'index.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (verificarSesion()) {
+                cargarFacturas();
+                cargarClientesParaSelect();
+                document.getElementById('filtroEstado').addEventListener('change', cargarFacturas);
+            }
+        });
+
+        async function cargarFacturas() {
+            try {
+                const filtroEstado = document.getElementById('filtroEstado').value;
+                const url = filtroEstado 
+                    ? `${API_URL}/facturas/?estado=${encodeURIComponent(filtroEstado)}`
+                    : `${API_URL}/facturas/`;
+                
+                const response = await fetch(url);
+                const facturas = await response.json();
+                
+                const table = document.getElementById('facturasTable');
+                
+                if (facturas.length === 0) {
+                    table.innerHTML = '<div class="empty-state"><h3>No hay facturas</h3><p>No se encontraron facturas con los filtros seleccionados</p></div>';
+                    return;
+                }
+                
+                table.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Monto</th>
+                                <th>Emisión</th>
+                                <th>Vencimiento</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${facturas.map(f => `
+                                <tr>
+                                    <td><strong>${f.numero_factura}</strong></td>
+                                    <td>${f.cliente.nombre}</td>
+                                    <td><strong>$${formatearMonto(f.monto)}</strong></td>
+                                    <td>${formatearFecha(f.fecha_emision)}</td>
+                                    <td>${formatearFecha(f.fecha_vencimiento)}</td>
+                                    <td><span class="status-badge ${f.estado.toLowerCase().replace(' ', '-')}">${f.estado}</span></td>
+                                    <td>
+                                        <button class="btn btn-small btn-outline" onclick="verFactura(${f.id})" title="Ver detalles">👁️</button>
+                                        <button class="btn btn-small btn-primary" onclick="editarFactura(${f.id})" title="Editar">✏️</button>
+                                        <button class="btn btn-small btn-success" onclick="enviarRecordatorio(${f.id})" title="Enviar recordatorio">📧</button>
+                                        <button class="btn btn-small btn-danger" onclick="eliminarFactura(${f.id}, '${f.numero_factura}')" title="Eliminar">🗑️</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function enviarRecordatorio(id) {
+            try {
+                const response = await fetch(`${API_URL}/emails/recordatorio/${id}`, { method: 'POST' });
+                if (response.ok) {
+                    alert('✅ Recordatorio enviado');
+                } else {
+                    alert('❌ Error al enviar');
+                }
+            } catch (error) {
+                alert('❌ Error al enviar');
+            }
+        }
+
+        function formatearMonto(monto) {
+            return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2 }).format(monto);
+        }
+
+        function formatearFecha(fecha) {
+            return new Date(fecha).toLocaleDateString('es-AR');
+        }
+
+        async function cargarClientesParaSelect() {
+            try {
+                const response = await fetch(`${API_URL}/clientes/`);
+                const clientes = await response.json();
+                
+                const select = document.getElementById('facturaCliente');
+                select.innerHTML = '<option value="">Seleccione un cliente...</option>';
+                
+                clientes.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.id;
+                    option.textContent = `${cliente.nombre} (${cliente.email})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar clientes:', error);
+            }
+        }
+
+        function abrirModalNuevaFactura() {
+            document.getElementById('facturaId').value = '';
+            document.getElementById('tituloModalFactura').textContent = '📄 Nueva Factura';
+            document.getElementById('btnGuardarFactura').textContent = 'Crear Factura';
+            document.getElementById('formNuevaFactura').reset();
+            document.getElementById('facturaEstado').value = 'Pendiente';
+            document.getElementById('facturaEstado').disabled = true; // Solo en creación
+            document.getElementById('modalNuevaFactura').style.display = 'flex';
+            // Establecer fecha mínima como hoy
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('facturaVencimiento').setAttribute('min', hoy);
+        }
+
+        function cerrarModalNuevaFactura() {
+            document.getElementById('modalNuevaFactura').style.display = 'none';
+            document.getElementById('formNuevaFactura').reset();
+        }
+
+        async function guardarFactura(event) {
+            event.preventDefault();
+            
+            const facturaId = document.getElementById('facturaId').value;
+            const clienteId = document.getElementById('facturaCliente').value;
+            if (!clienteId) {
+                alert('⚠️ Por favor selecciona un cliente');
+                return;
+            }
+            
+            const descripcionVal = document.getElementById('facturaDescripcion').value.trim();
+            const notasVal = document.getElementById('facturaNotas').value.trim();
+            
+            const factura = {
+                numero_factura: document.getElementById('facturaNumero').value.trim(),
+                cliente_id: parseInt(clienteId),
+                monto: parseFloat(document.getElementById('facturaMonto').value),
+                fecha_vencimiento: new Date(document.getElementById('facturaVencimiento').value + 'T12:00:00').toISOString(),
+                descripcion: descripcionVal === '' ? null : descripcionVal,
+                notas: notasVal === '' ? null : notasVal
+            };
+
+            // Agregar estado solo si estamos editando
+            if (facturaId) {
+                factura.estado = document.getElementById('facturaEstado').value;
+            }
+
+            try {
+                const url = facturaId ? `${API_URL}/facturas/${facturaId}` : `${API_URL}/facturas/`;
+                const method = facturaId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(factura)
+                });
+
+                if (response.ok) {
+                    alert(facturaId ? '✅ Factura actualizada exitosamente' : '✅ Factura creada exitosamente');
+                    cerrarModalNuevaFactura();
+                    cargarFacturas();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Error al guardar factura: ' + (error.detail || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión. Verifica que el servidor esté funcionando.');
+            }
+        }
+
+        async function editarFactura(id) {
+            try {
+                const response = await fetch(`${API_URL}/facturas/${id}`);
+                if (!response.ok) throw new Error('Factura no encontrada');
+                
+                const factura = await response.json();
+                
+                // Cargar clientes primero
+                await cargarClientesParaSelect();
+                
+                document.getElementById('facturaId').value = factura.id;
+                document.getElementById('facturaNumero').value = factura.numero_factura;
+                document.getElementById('facturaCliente').value = factura.cliente_id;
+                document.getElementById('facturaMonto').value = factura.monto;
+                document.getElementById('facturaVencimiento').value = factura.fecha_vencimiento.split('T')[0];
+                document.getElementById('facturaEstado').value = factura.estado;
+                document.getElementById('facturaEstado').disabled = false; // Habilitar en edición
+                document.getElementById('facturaDescripcion').value = factura.descripcion || '';
+                document.getElementById('facturaNotas').value = factura.notas || '';
+                
+                document.getElementById('tituloModalFactura').textContent = '✏️ Editar Factura';
+                document.getElementById('btnGuardarFactura').textContent = 'Actualizar Factura';
+                document.getElementById('modalNuevaFactura').style.display = 'flex';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al cargar datos de la factura');
+            }
+        }
+
+        async function eliminarFactura(id, numero) {
+            if (!confirm(`¿Estás seguro que deseas eliminar la factura "${numero}"?\n\n⚠️ Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/facturas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('✅ Factura eliminada exitosamente');
+                    cargarFacturas();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Error al eliminar factura: ' + (error.detail || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión. Verifica que el servidor esté funcionando.');
+            }
+        }
+
+        async function verFactura(id) {
+            try {
+                const response = await fetch(`${API_URL}/facturas/${id}`);
+                if (!response.ok) throw new Error('Factura no encontrada');
+                
+                const factura = await response.json();
+                
+                const detalles = `
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                        <h3 style="margin: 0 0 15px 0; color: #2d3748;">📋 Información de la Factura</h3>
+                        <p style="margin: 8px 0;"><strong>Número:</strong> ${factura.numero_factura}</p>
+                        <p style="margin: 8px 0;"><strong>Cliente:</strong> ${factura.cliente.nombre} (${factura.cliente.email})</p>
+                        <p style="margin: 8px 0;"><strong>Monto:</strong> $${factura.monto.toFixed(2)}</p>
+                        <p style="margin: 8px 0;"><strong>Estado:</strong> <span class="status-badge ${factura.estado.toLowerCase().replace(' ', '-')}">${factura.estado}</span></p>
+                        <p style="margin: 8px 0;"><strong>Fecha de emisión:</strong> ${new Date(factura.fecha_emision).toLocaleDateString('es-AR')}</p>
+                        <p style="margin: 8px 0;"><strong>Fecha de vencimiento:</strong> ${new Date(factura.fecha_vencimiento).toLocaleDateString('es-AR')}</p>
+                    </div>
+                    ${factura.descripcion ? `
+                        <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                            <h3 style="margin: 0 0 10px 0; color: #2d3748;">📝 Descripción</h3>
+                            <p style="margin: 0; white-space: pre-line;">${factura.descripcion}</p>
+                        </div>
+                    ` : ''}
+                    ${factura.notas ? `
+                        <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                            <h3 style="margin: 0 0 10px 0; color: #2d3748;">📌 Notas</h3>
+                            <p style="margin: 0; white-space: pre-line;">${factura.notas}</p>
+                        </div>
+                    ` : ''}
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px;">
+                        <h3 style="margin: 0 0 15px 0; color: #2d3748;">📧 Emails Enviados</h3>
+                        ${factura.emails_enviados && factura.emails_enviados.length > 0 ? `
+                            ${factura.emails_enviados.map(e => `
+                                <div style="background: white; padding: 10px; margin: 5px 0; border-left: 3px solid #0ea5e9; border-radius: 5px;">
+                                    <strong>${e.asunto}</strong><br>
+                                    <small>A: ${e.destinatario} | ${new Date(e.enviado_at).toLocaleString('es-AR')}</small>
+                                </div>
+                            `).join('')}
+                        ` : '<p style="color: #718096;">No se han enviado emails para esta factura</p>'}
+                    </div>
+                `;
+                
+                document.getElementById('detallesFactura').innerHTML = detalles;
+                document.getElementById('modalVerFactura').style.display = 'flex';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al cargar detalles de la factura');
+            }
+        }
+
+        function cerrarModalVerFactura() {
+            document.getElementById('modalVerFactura').style.display = 'none';
+        }
+
+        // Cerrar modales al hacer clic fuera
+        document.getElementById('modalNuevaFactura').addEventListener('click', function(event) {
+            if (event.target === this) {
+                cerrarModalNuevaFactura();
+            }
+        });
+
+        document.getElementById('modalVerFactura').addEventListener('click', function(event) {
+            if (event.target === this) {
+                cerrarModalVerFactura();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - MedFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="mainContent" style="display: flex;">
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">⚕️</div>
+                <h2 class="logo-text">MedFlow</h2>
+                <p class="logo-subtitle">Gestión Médica</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="facturas.html" class="nav-item">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Facturas</span>
+                </a>
+                <a href="pacientes.html" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clientes</span>
+                </a>
+                <a href="notificaciones.html" class="nav-item">
+                    <span class="nav-icon">✉️</span>
+                    <span class="nav-text">Notificaciones</span>
+                    <span class="notification-count">3</span>
+                </a>
+                <a href="configuracion.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Configuración</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <div class="header-content">
+                    <div>
+                        <h1>👥 Gestión de Clientes</h1>
+                        <p class="subtitle">Administra la información de los clientes</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+                        <a href="notificaciones.html" class="btn btn-outline notification-btn">🔔 <span class="badge">3</span></a>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">Usuario</span>
+                            <div class="user-avatar">👨‍⚕️</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="abrirModalNuevoCliente()">
+                        <span class="btn-icon">👤</span>
+                        <span>Nuevo Cliente</span>
+                    </button>
+                    <button class="btn btn-outline" onclick="window.location.reload()">
+                        <span class="btn-icon">🔄</span>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <div id="pacientesTable"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo/Editar Cliente -->
+    <div id="modalNuevoCliente" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="tituloModalCliente">👤 Nuevo Cliente</h2>
+                <button class="btn-close" onclick="cerrarModalNuevoCliente()">✖️</button>
+            </div>
+            <form id="formNuevoCliente" onsubmit="guardarCliente(event)">
+                <input type="hidden" id="clienteId">
+                <div class="form-group">
+                    <label for="clienteNombre">Nombre completo *</label>
+                    <input type="text" id="clienteNombre" required placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label for="clienteEmail">Email *</label>
+                    <input type="email" id="clienteEmail" required placeholder="correo@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="clienteTelefono">Teléfono</label>
+                    <input type="tel" id="clienteTelefono" placeholder="+54 11 1234-5678">
+                </div>
+                <div class="form-group">
+                    <label for="clienteEmpresa">Empresa</label>
+                    <input type="text" id="clienteEmpresa" placeholder="Nombre de la empresa">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="cerrarModalNuevoCliente()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardarCliente">Guardar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ver Cliente -->
+    <div id="modalVerCliente" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👤 Detalles del Cliente</h2>
+                <button class="btn-close" onclick="cerrarModalVerCliente()">✖️</button>
+            </div>
+            <div id="detallesCliente" style="padding: 20px 0;">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="cerrarModalVerCliente()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+
+        function verificarSesion() {
+            const sesionActiva = localStorage.getItem('sesionActiva');
+            const nombreUsuario = localStorage.getItem('nombreUsuario');
+            
+            if (sesionActiva !== 'true') {
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement && nombreUsuario) {
+                userNameElement.textContent = nombreUsuario;
+            }
+            
+            return true;
+        }
+
+        function cerrarSesion() {
+            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                localStorage.removeItem('sesionActiva');
+                localStorage.removeItem('nombreUsuario');
+                window.location.href = 'index.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (verificarSesion()) {
+                cargarClientes();
+            }
+        });
+
+        async function cargarClientes() {
+            try {
+                const response = await fetch(`${API_URL}/clientes/`);
+                const clientes = await response.json();
+                
+                const table = document.getElementById('pacientesTable');
+                
+                if (clientes.length === 0) {
+                    table.innerHTML = '<div class="empty-state"><h3>No hay clientes</h3><p>No se encontraron clientes registrados</p></div>';
+                    return;
+                }
+                
+                table.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Empresa</th>
+                                <th>Facturas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${clientes.map(c => `
+                                <tr>
+                                    <td><strong>${c.nombre}</strong></td>
+                                    <td>${c.email}</td>
+                                    <td>${c.telefono || '-'}</td>
+                                    <td>${c.empresa || '-'}</td>
+                                    <td>${c.facturas ? c.facturas.length : 0}</td>
+                                    <td>
+                                        <button class="btn btn-small btn-outline" onclick="verCliente(${c.id})" title="Ver detalles">👁️</button>
+                                        <button class="btn btn-small btn-primary" onclick="editarCliente(${c.id})" title="Editar">✏️</button>
+                                        <button class="btn btn-small btn-danger" onclick="eliminarCliente(${c.id}, '${c.nombre.replace(/'/g, "\\'")}')" title="Eliminar">🗑️</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function abrirModalNuevoCliente() {
+            document.getElementById('clienteId').value = '';
+            document.getElementById('tituloModalCliente').textContent = '👤 Nuevo Cliente';
+            document.getElementById('btnGuardarCliente').textContent = 'Guardar Cliente';
+            document.getElementById('formNuevoCliente').reset();
+            document.getElementById('modalNuevoCliente').style.display = 'flex';
+        }
+
+        function cerrarModalNuevoCliente() {
+            document.getElementById('modalNuevoCliente').style.display = 'none';
+            document.getElementById('formNuevoCliente').reset();
+        }
+
+        async function guardarCliente(event) {
+            event.preventDefault();
+            
+            const clienteId = document.getElementById('clienteId').value;
+            const telefonoVal = document.getElementById('clienteTelefono').value.trim();
+            const empresaVal = document.getElementById('clienteEmpresa').value.trim();
+            
+            const cliente = {
+                nombre: document.getElementById('clienteNombre').value.trim(),
+                email: document.getElementById('clienteEmail').value.trim(),
+                telefono: telefonoVal === '' ? null : telefonoVal,
+                empresa: empresaVal === '' ? null : empresaVal
+            };
+
+            try {
+                const url = clienteId ? `${API_URL}/clientes/${clienteId}` : `${API_URL}/clientes/`;
+                const method = clienteId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cliente)
+                });
+
+                if (response.ok) {
+                    alert(clienteId ? '✅ Cliente actualizado exitosamente' : '✅ Cliente creado exitosamente');
+                    cerrarModalNuevoCliente();
+                    cargarClientes();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Error al guardar cliente: ' + (error.detail || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión. Verifica que el servidor esté funcionando.');
+            }
+        }
+
+        async function editarCliente(id) {
+            try {
+                const response = await fetch(`${API_URL}/clientes/${id}`);
+                if (!response.ok) throw new Error('Cliente no encontrado');
+                
+                const cliente = await response.json();
+                
+                document.getElementById('clienteId').value = cliente.id;
+                document.getElementById('clienteNombre').value = cliente.nombre;
+                document.getElementById('clienteEmail').value = cliente.email;
+                document.getElementById('clienteTelefono').value = cliente.telefono || '';
+                document.getElementById('clienteEmpresa').value = cliente.empresa || '';
+                
+                document.getElementById('tituloModalCliente').textContent = '✏️ Editar Cliente';
+                document.getElementById('btnGuardarCliente').textContent = 'Actualizar Cliente';
+                document.getElementById('modalNuevoCliente').style.display = 'flex';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al cargar datos del cliente');
+            }
+        }
+
+        async function eliminarCliente(id, nombre) {
+            if (!confirm(`¿Estás seguro que deseas eliminar al cliente "${nombre}"?\n\n⚠️ Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/clientes/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('✅ Cliente eliminado exitosamente');
+                    cargarClientes();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Error al eliminar cliente: ' + (error.detail || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión. Verifica que el servidor esté funcionando.');
+            }
+        }
+
+        async function verCliente(id) {
+            try {
+                const response = await fetch(`${API_URL}/clientes/${id}`);
+                if (!response.ok) throw new Error('Cliente no encontrado');
+                
+                const cliente = await response.json();
+                
+                const detalles = `
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                        <h3 style="margin: 0 0 15px 0; color: #2d3748;">📋 Información Personal</h3>
+                        <p style="margin: 8px 0;"><strong>Nombre:</strong> ${cliente.nombre}</p>
+                        <p style="margin: 8px 0;"><strong>Email:</strong> ${cliente.email}</p>
+                        <p style="margin: 8px 0;"><strong>Teléfono:</strong> ${cliente.telefono || 'No especificado'}</p>
+                        <p style="margin: 8px 0;"><strong>Empresa:</strong> ${cliente.empresa || 'No especificado'}</p>
+                        <p style="margin: 8px 0;"><strong>Registrado:</strong> ${new Date(cliente.created_at).toLocaleString('es-AR')}</p>
+                    </div>
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px;">
+                        <h3 style="margin: 0 0 15px 0; color: #2d3748;">💰 Facturas</h3>
+                        <p style="margin: 8px 0;"><strong>Total de facturas:</strong> ${cliente.facturas ? cliente.facturas.length : 0}</p>
+                        ${cliente.facturas && cliente.facturas.length > 0 ? `
+                            <div style="margin-top: 15px;">
+                                ${cliente.facturas.map(f => `
+                                    <div style="background: white; padding: 10px; margin: 5px 0; border-left: 3px solid #0ea5e9; border-radius: 5px;">
+                                        <strong>${f.numero_factura}</strong> - $${f.monto.toFixed(2)} - ${f.estado}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p style="color: #718096; margin-top: 10px;">No hay facturas asociadas</p>'}
+                    </div>
+                `;
+                
+                document.getElementById('detallesCliente').innerHTML = detalles;
+                document.getElementById('modalVerCliente').style.display = 'flex';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al cargar detalles del cliente');
+            }
+        }
+
+        function cerrarModalVerCliente() {
+            document.getElementById('modalVerCliente').style.display = 'none';
+        }
+
+        // Cerrar modales al hacer clic fuera
+        document.getElementById('modalNuevoCliente').addEventListener('click', function(event) {
+            if (event.target === this) {
+                cerrarModalNuevoCliente();
+            }
+        });
+
+        document.getElementById('modalVerCliente').addEventListener('click', function(event) {
+            if (event.target === this) {
+                cerrarModalVerCliente();
+            }
+        });
+    </script>
+</body>
+</html>
