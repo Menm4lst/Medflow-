@@ -41,18 +41,4 @@ class Factura(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     cliente = relationship("Cliente", back_populates="facturas")
-    emails_enviados = relationship("EmailLog", back_populates="factura", cascade="all, delete-orphan")
 
-
-class EmailLog(Base):
-    __tablename__ = "email_logs"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    factura_id = Column(Integer, ForeignKey("facturas.id"), nullable=False)
-    destinatario = Column(String, nullable=False)
-    asunto = Column(String, nullable=False)
-    cuerpo = Column(Text, nullable=False)
-    enviado_at = Column(DateTime, default=datetime.utcnow)
-    estado = Column(String, default="Enviado")  # Enviado, Error, Pendiente
-    
-    factura = relationship("Factura", back_populates="emails_enviados")

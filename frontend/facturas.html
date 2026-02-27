@@ -71,6 +71,7 @@
                 </div>
 
                 <div class="filter-bar">
+                    <input type="text" id="buscadorFactura" placeholder="🔍 Buscar por número de factura..." style="flex: 1; max-width: 300px; padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
                     <select id="filtroEstado">
                         <option value="">📋 Todos los estados</option>
                         <option value="Pendiente">⏱ Pendiente</option>
@@ -188,23 +189,33 @@
                 cargarFacturas();
                 cargarClientesParaSelect();
                 document.getElementById('filtroEstado').addEventListener('change', cargarFacturas);
+                document.getElementById('buscadorFactura').addEventListener('input', cargarFacturas);
             }
         });
 
         async function cargarFacturas() {
             try {
                 const filtroEstado = document.getElementById('filtroEstado').value;
+                const buscador = document.getElementById('buscadorFactura').value.toLowerCase().trim();
                 const url = filtroEstado 
                     ? `${API_URL}/facturas/?estado=${encodeURIComponent(filtroEstado)}`
                     : `${API_URL}/facturas/`;
                 
                 const response = await fetch(url);
-                const facturas = await response.json();
+                let facturas = await response.json();
+                
+                // Filtrar por número de factura si hay búsqueda
+                if (buscador) {
+                    facturas = facturas.filter(f => f.numero_factura.toLowerCase().includes(buscador));
+                }
                 
                 const table = document.getElementById('facturasTable');
                 
                 if (facturas.length === 0) {
-                    table.innerHTML = '<div class="empty-state"><h3>No hay facturas</h3><p>No se encontraron facturas con los filtros seleccionados</p></div>';
+                    const mensaje = buscador 
+                        ? `No se encontraron facturas que coincidan con "${buscador}"`
+                        : 'No se encontraron facturas con los filtros seleccionados';
+                    table.innerHTML = `<div class="empty-state"><h3>No hay facturas</h3><p>${mensaje}</p></div>`;
                     return;
                 }
                 
@@ -233,7 +244,6 @@
                                     <td>
                                         <button class="btn btn-small btn-outline" onclick="verFactura(${f.id})" title="Ver detalles">👁️</button>
                                         <button class="btn btn-small btn-primary" onclick="editarFactura(${f.id})" title="Editar">✏️</button>
-                                        <button class="btn btn-small btn-success" onclick="enviarRecordatorio(${f.id})" title="Enviar recordatorio">📧</button>
                                         <button class="btn btn-small btn-danger" onclick="eliminarFactura(${f.id}, '${f.numero_factura}')" title="Eliminar">🗑️</button>
                                     </td>
                                 </tr>
@@ -243,19 +253,6 @@
                 `;
             } catch (error) {
                 console.error('Error:', error);
-            }
-        }
-
-        async function enviarRecordatorio(id) {
-            try {
-                const response = await fetch(`${API_URL}/emails/recordatorio/${id}`, { method: 'POST' });
-                if (response.ok) {
-                    alert('✅ Recordatorio enviado');
-                } else {
-                    alert('❌ Error al enviar');
-                }
-            } catch (error) {
-                alert('❌ Error al enviar');
             }
         }
 
@@ -438,17 +435,6 @@
                             <p style="margin: 0; white-space: pre-line;">${factura.notas}</p>
                         </div>
                     ` : ''}
-                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px;">
-                        <h3 style="margin: 0 0 15px 0; color: #2d3748;">📧 Emails Enviados</h3>
-                        ${factura.emails_enviados && factura.emails_enviados.length > 0 ? `
-                            ${factura.emails_enviados.map(e => `
-                                <div style="background: white; padding: 10px; margin: 5px 0; border-left: 3px solid #0ea5e9; border-radius: 5px;">
-                                    <strong>${e.asunto}</strong><br>
-                                    <small>A: ${e.destinatario} | ${new Date(e.enviado_at).toLocaleString('es-AR')}</small>
-                                </div>
-                            `).join('')}
-                        ` : '<p style="color: #718096;">No se han enviado emails para esta factura</p>'}
-                    </div>
                 `;
                 
                 document.getElementById('detallesFactura').innerHTML = detalles;

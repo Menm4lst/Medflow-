@@ -5,7 +5,7 @@ echo   💰 FACTURAFLOW
 echo ========================================
 echo.
 
-echo [1/4] Verificando entorno virtual...
+echo [1/3] Verificando entorno virtual...
 if not exist "backend\venv" (
     echo ⚠️  No se encontró entorno virtual. Creando...
     cd backend
@@ -17,12 +17,12 @@ if not exist "backend\venv" (
 )
 
 echo.
-echo [2/4] Activando entorno virtual...
+echo [2/3] Activando entorno virtual...
 call backend\venv\Scripts\activate.bat
 echo ✅ Entorno activado
 
 echo.
-echo [3/4] Verificando dependencias...
+echo [3/3] Verificando dependencias...
 pip show fastapi >nul 2>&1
 if errorlevel 1 (
     echo ⚠️  Instalando dependencias...
@@ -32,18 +32,6 @@ if errorlevel 1 (
     echo ✅ Dependencias instaladas
 ) else (
     echo ✅ Dependencias ya instaladas
-)
-
-echo.
-echo [4/4] Verificando archivo .env...
-if not exist "backend\.env" (
-    echo ⚠️  No se encontró archivo .env
-    echo 📝 Copiando desde .env.example...
-    copy "backend\.env.example" "backend\.env" >nul
-    echo.
-    echo ⚠️  IMPORTANTE: Edita backend\.env con tus credenciales de email
-    echo.
-    pause
 )
 
 echo.

@@ -7,7 +7,6 @@ from typing import List
 import models
 import schemas
 from database import engine, get_db
-from email_service import enviar_email, generar_email_recordatorio
 
 # Crear las tablas
 models.Base.metadata.create_all(bind=engine)
@@ -246,99 +245,6 @@ def obtener_alertas(db: Session = Depends(get_db)):
         })
     
     return alertas
-
-
-# ============= SISTEMA DE EMAILS =============
-
-@app.post("/api/emails/enviar")
-async def enviar_email_factura(
-    request: schemas.EnviarEmailRequest,
-    db: Session = Depends(get_db)
-):
-    factura = db.query(models.Factura).filter(models.Factura.id == request.factura_id).first()
-    if not factura:
-        raise HTTPException(status_code=404, detail="Factura no encontrada")
-    
-    # Enviar email
-    exito = await enviar_email(
-        destinatario=factura.cliente.email,
-        asunto=request.asunto,
-        cuerpo=request.cuerpo
-    )
-    
-    # Registrar en log
-    email_log = models.EmailLog(
-        factura_id=factura.id,
-        destinatario=factura.cliente.email,
-        asunto=request.asunto,
-        cuerpo=request.cuerpo,
-        estado="Enviado" if exito else "Error"
-    )
-    db.add(email_log)
-    
-    # Actualizar estado de factura si estaba pendiente
-    if factura.estado == models.EstadoFactura.PENDIENTE:
-        factura.estado = models.EstadoFactura.EN_SEGUIMIENTO
-    
-    db.commit()
-    
-    if not exito:
-        return {"message": "Error al enviar email", "success": False}
-    
-    return {"message": "Email enviado exitosamente", "success": True}
-
-
-@app.post("/api/emails/recordatorio/{factura_id}")
-async def enviar_recordatorio(factura_id: int, db: Session = Depends(get_db)):
-    factura = db.query(models.Factura).filter(models.Factura.id == factura_id).first()
-    if not factura:
-        raise HTTPException(status_code=404, detail="Factura no encontrada")
-    
-    # Calcular días hasta vencimiento
-    dias = (factura.fecha_vencimiento - datetime.utcnow()).days
-    
-    # Generar email
-    asunto, cuerpo = generar_email_recordatorio(
-        factura.numero_factura,
-        factura.cliente.nombre,
-        factura.monto,
-        dias
-    )
-    
-    # Enviar
-    exito = await enviar_email(
-        destinatario=factura.cliente.email,
-        asunto=asunto,
-        cuerpo=cuerpo
-    )
-    
-    # Registrar
-    email_log = models.EmailLog(
-        factura_id=factura.id,
-        destinatario=factura.cliente.email,
-        asunto=asunto,
-        cuerpo=cuerpo,
-        estado="Enviado" if exito else "Error"
-    )
-    db.add(email_log)
-    
-    if factura.estado == models.EstadoFactura.PENDIENTE:
-        factura.estado = models.EstadoFactura.EN_SEGUIMIENTO
-    
-    db.commit()
-    
-    if not exito:
-        return {"message": "Error al enviar recordatorio", "success": False}
-    
-    return {"message": "Recordatorio enviado exitosamente", "success": True}
-
-
-@app.get("/api/emails/{factura_id}", response_model=List[schemas.EmailLogSimple])
-def obtener_emails_factura(factura_id: int, db: Session = Depends(get_db)):
-    emails = db.query(models.EmailLog).filter(
-        models.EmailLog.factura_id == factura_id
-    ).order_by(models.EmailLog.enviado_at.desc()).all()
-    return emails
 
 
 @app.get("/")

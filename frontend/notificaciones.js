@@ -74,14 +74,6 @@ function agregarNotificacionesSistema() {
             descripcion: 'El sistema de gestión ha sido actualizado a la versión 2.0',
             fecha: new Date(Date.now() - 3600000).toISOString(),
             leida: false
-        },
-        {
-            id: 'sys-2',
-            tipo: 'info',
-            titulo: '📧 Servicio de email mejorado',
-            descripcion: 'Ahora puedes enviar recordatorios con templates HTML profesionales',
-            fecha: new Date(Date.now() - 7200000).toISOString(),
-            leida: false
         }
     ];
     
@@ -130,11 +122,6 @@ function mostrarNotificaciones() {
                 ${!notif.leida ? `
                     <button class="btn-small btn-primary" onclick="marcarLeida('${notif.id}')">
                         ✓ Marcar como leída
-                    </button>
-                ` : ''}
-                ${notif.facturaId ? `
-                    <button class="btn-small btn-outline" onclick="enviarRecordatorio(${notif.facturaId})">
-                        📧 Enviar Recordatorio
                     </button>
                 ` : ''}
                 <button class="btn-small btn-text" onclick="eliminarNotificacion('${notif.id}')">
@@ -210,21 +197,7 @@ function eliminarNotificacion(id) {
 }
 
 async function enviarRecordatorio(facturaId) {
-    try {
-        const response = await fetch(`${API_URL}/emails/recordatorio/${facturaId}`, {
-            method: 'POST'
-        });
-        
-        if (response.ok) {
-            alert('✅ Recordatorio enviado exitosamente');
-            marcarLeida(String(facturaId));
-        } else {
-            alert('❌ Error al enviar el recordatorio');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error al enviar el recordatorio');
-    }
+    alert('⚠️ Función de recordatorios deshabilitada');
 }
 
 function formatearMonto(monto) {

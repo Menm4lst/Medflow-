@@ -1031,6 +1031,10 @@ header h1 {
 /* Filtros */
 .filter-bar {
     margin-bottom: 24px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .filter-bar select {
@@ -1050,6 +1054,27 @@ header h1 {
 }
 
 .filter-bar select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+}
+
+.filter-bar input[type="text"] {
+    padding: 10px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.95em;
+    background: white;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s;
+}
+
+.filter-bar input[type="text"]:hover {
+    border-color: var(--primary);
+}
+
+.filter-bar input[type="text"]:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(14,165,233,0.1);

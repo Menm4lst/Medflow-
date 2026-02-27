@@ -54,17 +54,6 @@ class FacturaUpdate(BaseModel):
     notas: Optional[str] = None
 
 
-class EmailLogSimple(BaseModel):
-    id: int
-    destinatario: str
-    asunto: str
-    enviado_at: datetime
-    estado: str
-    
-    class Config:
-        from_attributes = True
-
-
 class Factura(FacturaBase):
     id: int
     fecha_emision: datetime
@@ -72,7 +61,6 @@ class Factura(FacturaBase):
     created_at: datetime
     updated_at: datetime
     cliente: Cliente
-    emails_enviados: List[EmailLogSimple] = []
     
     class Config:
         from_attributes = True
@@ -98,10 +86,3 @@ class Alerta(BaseModel):
     dias_hasta_vencimiento: int
     tipo: str  # "proxima_vencer" o "vencida"
     mensaje: str
-
-
-# Schema para envío de email
-class EnviarEmailRequest(BaseModel):
-    factura_id: int
-    asunto: str
-    cuerpo: str
